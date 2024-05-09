@@ -1,0 +1,19 @@
+type Reservation {
+  id: ID!
+  user: User!
+  date: String!
+  status: String!
+  # Otros campos relacionados con la reserva
+}
+
+input ReservationInput {
+  date: String!
+  # Otros campos de la reserva
+}
+
+type Mutation {
+  createReservation(input: ReservationInput!): Reservation!
+  cancelReservation(id: ID!): String!
+  # Otros mutaciones relacionadas con reservas
+}
+
