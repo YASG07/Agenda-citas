@@ -1,29 +1,18 @@
-const {ApolloServer, gql} = require('apollo-server');
-const fs = require('fs');
-const schema = fs.readFileSync("./schema.graphql", "utf-8");
+const { ApolloServer } = require('apollo-server');
 
-let people = [
-    
-  ];
+// Schemas
+const userSchema = require('./schemas/user.schema');
+const appointmentSchema = require('./schemas/appointment.schema');
 
+// Resolvers
+const { userResolver } = require('./resolvers/user.resolver'); 
+const { appointmentResolver } = require('./resolvers/appointment.resolver');
 
-const resolvers = {
-  Query: {
-     
-  },
-  Mutation: {
-      
-  },
-  Suscription: {
-
-  }
-};
-  
 const server = new ApolloServer({
-    typeDefs: gql(schema),
-    resolvers
+    typeDefs: [userSchema, appointmentSchema],
+    resolvers: [userResolver, appointmentResolver]
 });
 
 server.listen().then(({ url }) => {
-    console.log(`Server running on: ${url}`);
-})
+    console.log(`Servidor en ${url}`)
+});
