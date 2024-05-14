@@ -1,4 +1,4 @@
-const { gpl }  = require('apollo-server');
+const { gql }  = require('apollo-server');
 
 module.exports = gql(`
     type Appointment {
@@ -8,6 +8,8 @@ module.exports = gql(`
         treatment: String!
         patient: Person!
         price: Float
+        address: String!
+        doctor: String!
     }
 
     type Person {
@@ -30,8 +32,8 @@ module.exports = gql(`
     }
 
     type Mutation {
-        addAppointment(id: ID!, date: String!, time: String!, treatment: String!, patient: personInput, price: Float): Appointment!
-        updateAppointment(id: ID!, date: String!, time: String!): Appointment!
+        addAppointment(date: String!, time: String!, treatment: String!, patient: personInput, price: Float, address: String!, doctor: String!): Appointment!
+        updateAppointment(id: ID!, date: String!, time: String!, address: String!, doctor: String!): Appointment!
         deleteAppointment(id: ID!): Appointment!
     }
 
