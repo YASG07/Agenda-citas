@@ -29,7 +29,17 @@ const appointmentResolver = {
             return newAppointment;
         },
         updateAppointment: (parent, {id, date, time, address, doctor}) => {
-            
+            const appointment = appointmentData.find(
+                (element) => element.id === id
+            );
+            if(appointment === undefined){
+                throw new Error("Appointment not found or scheduled");
+            }
+            appointment.date = date;
+            appointment.time = time;
+            appointment.address = address;
+            appointment.doctor = doctor;
+            return appointment;
         },
         deleteAppointment: (parent, { id }) => {
             const appointmentIndex = appointmentData.findIndex(
