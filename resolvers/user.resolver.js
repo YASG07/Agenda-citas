@@ -4,16 +4,21 @@ const userResolver = {
     Query: {
         allUsers: () => {
             return userData
+        },
+        oneUser: (_, {id}) => {
+            const user = userData.find(user => user.id === id);
+            return user;
         }
     },
     Mutation: {
-        addUser: (parent, {name, email, password, age}) => {
+        addUser: (parent, {name, email, password, age, gender}) => {
             const newUser = {
                 id: userData.length + 1,
                 name: name,
                 email: email,
                 password: password,
-                age: age
+                age: age,
+                gender: gender
             };
 
             userData.push(newUser);
@@ -26,12 +31,22 @@ const userResolver = {
                 throw new Error("User not found");
             }
 
-            const userDeleted = userData.splice(userIndex, 1)[0];
-
-            return userDeleted;
+            return userData.splice(userIndex, 1)[0];
         },
-        updateUser: (parent, {name, email, password, age}) => {
+        updateUser: (parent, {name, email, password, age, gender}) => {
+            const user = userData.find(user => user.id === id);
             
+            if(user === undefined){
+                throw new Error("User not found");
+            }
+
+            user.name = name || user.name;
+            user.email = email || user.email;
+            user.password = password || user.password;
+            user.age = age || user.age;
+            user.gender = gender || user.email;
+            
+            return user;
         }
     }
 }
