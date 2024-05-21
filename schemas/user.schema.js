@@ -1,6 +1,6 @@
-const { gql } = require('apollo-server');  
+const { gql } = require('apollo-server');
 
-module.exports = gql(`
+module.exports = gql`
     type User {
         id: ID!
         name: String!
@@ -18,10 +18,10 @@ module.exports = gql(`
     type Mutation {
         addUser(name: String!, email: String!, password: String!, age: Int!, gender: String!): User!
         deleteUser(id: ID!): User!
-        updateUser(name: String, email: String, password: String, age: Int, gender: String): User!
+        updateUser(id: ID!, name: String, email: String, password: String, age: Int, gender: String): User!
     }
 
     type Subscription {
-        userUpdated: User!
+        userCreated: User!
     }
-`)
+`;

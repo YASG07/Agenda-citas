@@ -1,61 +1,96 @@
-const { doctorData } = require('../data/doctor.data');
+const Doctor = require('../models/doctor');
+const { PubSub } = require('graphql-subscriptions');
+const pubsub = new PubSub();
 
 const doctorResolver = {
     Query: {
-        allDoctors: () => {
-            return doctorData;
+        allDoctors: async () => {
+            try {
+                const doctors = await Doctor.find();
+                return doctors;
+            } catch (error) {
+                throw new Error("Failed to fetch doctors");
+            }
         },
-        oneDoctor: (_, { id }) => {
-            const doctor = doctorData.find(doctor => doctor.id === id);
-            return doctor;
+        oneDoctor: async (_, { id }) => {
+            try {
+                const doctor = await Doctor.findById(id);
+                if (!doctor) {
+                    throw new Error("Doctor not found");
+                }
+                return doctor;
+            } catch (error) {
+                throw new Error("Failed to fetch doctor");
+            }
         },
-        specialtyDoctors: (_, { specialty }) => {
-            const doctors = doctorData.filter(doctor => doctor.specialty === specialty);
-            return doctors;
+        specialtyDoctors: async (_, { specialty }) => {
+            try {
+                const doctors = await Doctor.find({ specialty });
+                return doctors;
+            } catch (error) {
+                throw new Error("Failed to fetch doctors by specialty");
+            }
         }
     },
     Mutation: {
-        addDoctor: (_, { name, lastName, gender, phone, email, specialty, professionalID, office, atentionDays, atentionHours }) =>{
-            const newDoctor = {
-                id: doctorData.length + 1,
-                name,
-                lastName,
-                gender,
-                phone,
-                email,
-                specialty,
-                professionalID,
-                office,
-                atentionDays,
-                atentionHours
-            };
-
-            doctorData.push(newDoctor);
-
-            return newDoctor;
+        addDoctor: async (_, { name, lastName, gender, phone, email, specialty, professionalID, office, atentionDays, atentionHours }) => {
+            try {
+                const newDoctor = new Doctor({
+                    name,
+                    lastName,
+                    gender,
+                    phone,
+                    email,
+                    specialty,
+                    professionalID,
+                    office,
+                    atentionDays,
+                    atentionHours
+                });
+                await newDoctor.save();
+                pubsub.publish('DOCTOR_CREATED', { doctorCreated: newDoctor });
+                return newDoctor;
+            } catch (error) {
+                throw new Error("Failed to add doctor");
+            }
         },
-        updateDoctor: (_, { id, name, lastName, gender, phone, email, specialty, professionalID, office, atentionDays, atentionHours }) =>{
-            const doctorIndex = doctorData.findIndex(doctor => doctor.id === id);
-
-            const doctorUpdated = doctorData[doctorIndex];
-            doctorUpdated.name = name || doctorUpdated.name;
-            doctorUpdated.lastName = lastName || doctorUpdated.lastName;
-            doctorUpdated.gender = gender || doctorUpdated.gender;
-            doctorUpdated.phone = phone || doctorUpdated.phone;
-            doctorUpdated.email = email || doctorUpdated.email;
-            doctorUpdated.specialty = specialty || doctorUpdated.specialty;
-            doctorUpdated.professionalID = professionalID || doctorUpdated.professionalID;
-            doctorUpdated.office = office || doctorUpdated.office;
-            doctorUpdated.atentionDays = atentionDays || doctorUpdated.atentionDays;
-            doctorUpdated.atentionHours = atentionHours || doctorUpdated.atentionHours;
-
-            return doctorUpdated;
+        updateDoctor: async (_, { id, name, lastName, gender, phone, email, specialty, professionalID, office, atentionDays, atentionHours }) => {
+            try {
+                const doctor = await Doctor.findById(id);
+                if (!doctor) {
+                    throw new Error("Doctor not found");
+                }
+                doctor.name = name || doctor.name;
+                doctor.lastName = lastName || doctor.lastName;
+                doctor.gender = gender || doctor.gender;
+                doctor.phone = phone || doctor.phone;
+                doctor.email = email || doctor.email;
+                doctor.specialty = specialty || doctor.specialty;
+                doctor.professionalID = professionalID || doctor.professionalID;
+                doctor.office = office || doctor.office;
+                doctor.atentionDays = atentionDays || doctor.atentionDays;
+                doctor.atentionHours = atentionHours || doctor.atentionHours;
+                await doctor.save();
+                return doctor;
+            } catch (error) {
+                throw new Error("Failed to update doctor");
+            }
         },
-        deleteDoctor: (_, { id }) => {
-            const doctorIndex = doctorData.findIndex(doctor => doctor.id === id);
-            const doctor = doctorData[doctorIndex];
-            doctorData.splice(doctorIndex, 1);
-            return doctor;
+        deleteDoctor: async (_, { id }) => {
+            try {
+                const doctor = await Doctor.findByIdAndDelete(id);
+                if (!doctor) {
+                    throw new Error("Doctor not found");
+                }
+                return doctor;
+            } catch (error) {
+                throw new Error("Failed to delete doctor");
+            }
+        }
+    },
+    Subscription: {
+        doctorCreated: {
+            subscribe: () => pubsub.asyncIterator('DOCTOR_CREATED')
         }
     }
 };

@@ -1,6 +1,6 @@
-const { gql }  = require('apollo-server');
+const { gql } = require('apollo-server');
 
-module.exports = gql(`
+module.exports = gql`
     type Appointment {
         id: ID!
         date: String!
@@ -20,8 +20,8 @@ module.exports = gql(`
     }
 
     type Query {
-        allAppointments: [Appointment!]! 
-        oneAppointment(id: ID!): Appointment 
+        allAppointments: [Appointment!]!
+        oneAppointment(id: ID!): Appointment
     }
 
     input personInput {
@@ -37,9 +37,7 @@ module.exports = gql(`
         deleteAppointment(id: ID!): Appointment!
     }
 
-    type Suscription {
-        appointmentAdded: Appointment
-        appointmentChanged: Appointment!
-        appointmentCanceled: Appointment!
+    type Subscription {
+        appointmentCreated: Appointment!
     }
-`)
+`;

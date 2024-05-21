@@ -1,55 +1,81 @@
-const { userData } = require('../data/user.data');
+const User = require('../models/user');
+const { PubSub } = require('graphql-subscriptions');
+const pubsub = new PubSub();
 
 const userResolver = {
     Query: {
-        allUsers: () => {
-            return userData
+        allUsers: async () => {
+            try {
+                const users = await User.find();
+                return users;
+            } catch (error) {
+                throw new Error("Failed to fetch users");
+            }
         },
-        oneUser: (_, {id}) => {
-            const user = userData.find(user => user.id === id);
-            return user;
+        oneUser: async (_, { id }) => {
+            try {
+                const user = await User.findById(id);
+                if (!user) {
+                    throw new Error("User not found");
+                }
+                return user;
+            } catch (error) {
+                throw new Error("Failed to fetch user");
+            }
         }
     },
     Mutation: {
-        addUser: (parent, {name, email, password, age, gender}) => {
-            const newUser = {
-                id: userData.length + 1,
-                name: name,
-                email: email,
-                password: password,
-                age: age,
-                gender: gender
-            };
-
-            userData.push(newUser);
-
-            return newUser;
-        },
-        deleteUser: (parent, {id}) => {
-            const userIndex = userData.findIndex(user => user.id === id);
-            if(userIndex == -1){
-                throw new Error("User not found");
+        addUser: async (_, { name, email, password, age, gender }) => {
+            try {
+                const newUser = new User({
+                    name,
+                    email,
+                    password,
+                    age,
+                    gender
+                });
+                await newUser.save();
+                pubsub.publish('USER_CREATED', { userCreated: newUser });
+                return newUser;
+            } catch (error) {
+                throw new Error("Failed to add user");
             }
-
-            return userData.splice(userIndex, 1)[0];
         },
-        updateUser: (parent, {name, email, password, age, gender}) => {
-            const user = userData.find(user => user.id === id);
-            
-            if(user === undefined){
-                throw new Error("User not found");
+        deleteUser: async (_, { id }) => {
+            try {
+                const user = await User.findByIdAndDelete(id);
+                if (!user) {
+                    throw new Error("User not found");
+                }
+                return user;
+            } catch (error) {
+                throw new Error("Failed to delete user");
             }
-
-            user.name = name || user.name;
-            user.email = email || user.email;
-            user.password = password || user.password;
-            user.age = age || user.age;
-            user.gender = gender || user.email;
-            
-            return user;
+        },
+        updateUser: async (_, { id, name, email, password, age, gender }) => {
+            try {
+                const user = await User.findById(id);
+                if (!user) {
+                    throw new Error("User not found");
+                }
+                user.name = name || user.name;
+                user.email = email || user.email;
+                user.password = password || user.password;
+                user.age = age || user.age;
+                user.gender = gender || user.gender;
+                await user.save();
+                return user;
+            } catch (error) {
+                throw new Error("Failed to update user");
+            }
+        }
+    },
+    Subscription: {
+        userCreated: {
+            subscribe: () => pubsub.asyncIterator('USER_CREATED')
         }
     }
-}
+};
 
 module.exports = {
     userResolver
