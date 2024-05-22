@@ -1,3 +1,4 @@
+require('dotenv').config();
 const express = require('express');
 const { ApolloServer } = require('apollo-server-express');
 const { createServer } = require('http');
@@ -17,7 +18,8 @@ const { appointmentResolver } = require('./resolvers/appointment.resolver');
 const { doctorResolver } = require('./resolvers/doctor.resolver');
 
 // Conexion a Mongo Atlas
-const MONGODB = "mongodb+srv://admin:admin@subscriptionserver.aeltz5n.mongodb.net/?retryWrites=true&w=majority&appName=SubscriptionServer";
+const MONGODB_URI = process.env.MONGODB_URI;
+const PORT = process.env.PORT || 4000;
 
 const schema = makeExecutableSchema({
     typeDefs: [userSchema, appointmentSchema, doctorSchema],
@@ -46,10 +48,9 @@ const schema = makeExecutableSchema({
     await server.start();
     server.applyMiddleware({ app });
 
-    mongoose.connect(MONGODB, { useNewUrlParser: true, useUnifiedTopology: true })
+    mongoose.connect(MONGODB_URI, { useNewUrlParser: true, useUnifiedTopology: true })
         .then(() => {
             console.log('Conectado a MongoDB');
-            const PORT = 4000;
             httpServer.listen(PORT, () => {
                 console.log(`Servidor corriendo en http://localhost:${PORT}${server.graphqlPath}`);
                 new SubscriptionServer(
