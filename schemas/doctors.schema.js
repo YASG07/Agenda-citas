@@ -29,5 +29,6 @@ module.exports = gql`
 
     type Subscription {
         doctorCreated: Doctor!
+        doctorDeleted: Doctor!
     }
 `;

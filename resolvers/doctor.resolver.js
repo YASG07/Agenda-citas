@@ -82,6 +82,7 @@ const doctorResolver = {
                 if (!doctor) {
                     throw new Error("Doctor not found");
                 }
+                pubsub.publish('DOCTOR_DELETED', { doctorDeleted: doctor });
                 return doctor;
             } catch (error) {
                 throw new Error("Failed to delete doctor");
@@ -91,6 +92,9 @@ const doctorResolver = {
     Subscription: {
         doctorCreated: {
             subscribe: () => pubsub.asyncIterator('DOCTOR_CREATED')
+        },
+        doctorDeleted: {
+            subscribe: () => pubsub.asyncIterator('DOCTOR_DELETED')
         }
     }
 };
